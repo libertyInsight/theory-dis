@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사상가 설전</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700;900&family=Nanum+Brush+Script&display=swap');
+
+  :root{
+    --ink:      #15130f;
+    --ink-2:    #1d1a14;
+    --paper:    #e8dec4;
+    --paper-2:  #ddd0ac;
+    --seal:     #9c2b22;
+    --seal-lit: #c4402f;
+    --jade:     #52766a;
+    --jade-lit: #6f9686;
+    --brass:    #a6874c;
+    --ink-text: #efe6d2;
+    --ink-muted:#938972;
+    --line:     #3a3527;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 50% -10%, #232016 0%, transparent 60%),
+      var(--ink);
+    color:var(--ink-text);
+    font-family:'Noto Sans KR', system-ui, sans-serif;
+    padding:24px 16px 48px;
+    min-height:100vh;
+  }
+
+  .stage{ max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+
+  h1,h2,h3{ font-family:'Nanum Myeongjo', Georgia, serif; margin:0; text-wrap:balance; }
+
+  /* ---------- header ---------- */
+  .masthead{ text-align:center; padding-block:4px 2px; }
+  .masthead .eyebrow{ font-size:12px; letter-spacing:.18em; color:var(--brass); text-transform:uppercase; font-weight:500; }
+  .masthead h1{ font-size:clamp(22px,5vw,30px); color:var(--ink-text); font-weight:800; margin-top:4px;}
+  .masthead .sub{ font-size:13px; color:var(--ink-muted); margin-top:6px; }
+
+  .backlink{
+    background:none; border:none; color:var(--ink-muted); font-family:'Noto Sans KR',sans-serif;
+    font-size:12.5px; cursor:pointer; padding:0; margin-bottom:2px; text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .backlink:hover{ color:var(--brass); }
+
+  /* ---------- track select (메인 메뉴) ---------- */
+  .track-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:520px){ .track-grid{ grid-template-columns:1fr; } }
+  .track-card{
+    position:relative; overflow:hidden;
+    background:linear-gradient(180deg,var(--ink-2),var(--ink));
+    border:1px solid var(--line); border-radius:8px; padding:22px 20px 20px;
+    text-align:left; color:var(--ink-text); cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; gap:10px;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .track-card .glyph{
+    position:absolute; right:10px; top:-6px; font-family:'Nanum Myeongjo',serif;
+    font-size:88px; opacity:.06; pointer-events:none;
+  }
+  .track-card .eyebrow{ font-size:11px; letter-spacing:.16em; color:var(--brass); text-transform:uppercase; }
+  .track-card .title{ font-family:'Nanum Myeongjo',serif; font-size:23px; font-weight:800; }
+  .track-card .desc{ font-size:13px; line-height:1.6; color:#cabf9f; }
+  .track-card.train:hover, .track-card.train:focus-visible{ border-color:var(--brass); transform:translateY(-2px); outline:none; }
+  .track-card.battle:hover, .track-card.battle:focus-visible{ border-color:var(--seal-lit); transform:translateY(-2px); outline:none; }
+
+  /* ---------- side select (대결모드) ---------- */
+  .pick-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:480px){ .pick-grid{ grid-template-columns:1fr; } }
+  .pick-card{
+    background:linear-gradient(180deg,var(--ink-2),var(--ink));
+    border:1px solid var(--line); border-radius:6px; padding:20px 18px;
+    text-align:left; color:var(--ink-text); cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; gap:8px;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .pick-card:hover, .pick-card:focus-visible{ border-color:var(--brass); transform:translateY(-2px); outline:none; }
+  .pick-card .who{ font-family:'Nanum Myeongjo',serif; font-size:22px; font-weight:700; }
+  .pick-card .who small{ display:block; font-family:'Noto Sans KR',sans-serif; font-size:12px; color:var(--ink-muted); font-weight:400; margin-top:2px;}
+  .pick-card .stance{ font-size:13.5px; line-height:1.6; color:#cabf9f; }
+
+  /* ---------- issue banner ---------- */
+  .issue-banner{
+    position:relative; border:1px solid var(--line); border-radius:6px; padding:16px 18px;
+    background:var(--ink-2); overflow:hidden; text-align:center;
+  }
+  .issue-banner .hanja{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'Nanum Myeongjo',serif; font-size:120px; color:var(--ink-text);
+    opacity:.05; pointer-events:none; user-select:none;
+  }
+  .issue-banner .q{ position:relative; font-size:15.5px; line-height:1.6; color:var(--ink-text); font-weight:500; }
+  .issue-banner .cat{ position:relative; font-size:11px; letter-spacing:.14em; color:var(--brass); text-transform:uppercase; margin-bottom:6px; }
+
+  /* ---------- round tracker (대결모드) ---------- */
+  .round-tracker{ display:flex; gap:9px; justify-content:center; align-items:center; }
+  .round-dot{
+    width:10px; height:10px; border-radius:50%; border:1.5px solid var(--brass);
+    background:transparent; transition:background-color .2s, box-shadow .2s;
+  }
+  .round-dot.done{ background:var(--brass); }
+  .round-dot.current{ background:var(--seal-lit); border-color:var(--seal-lit); box-shadow:0 0 0 4px rgba(196,64,47,.22); }
+  .round-label{ font-size:11px; color:var(--ink-muted); letter-spacing:.06em; text-align:center; margin-top:5px; }
+
+  /* ---------- vs row (대결모드) ---------- */
+  .vs-row{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px; }
+  .fighter{ display:flex; flex-direction:column; gap:6px; }
+  .fighter.me{ align-items:flex-start; }
+  .fighter.opp{ align-items:flex-end; text-align:right; }
+  .fighter .name{ font-family:'Nanum Myeongjo',serif; font-size:19px; font-weight:700; }
+  .fighter .tag{ font-size:11px; color:var(--ink-muted); }
+  .gauge-track{
+    width:100%; height:12px; border-radius:99px; background:#0c0b08;
+    border:1px solid var(--line); overflow:hidden; position:relative;
+  }
+  .gauge-fill{ height:100%; border-radius:99px; transition:width .55s cubic-bezier(.4,0,.2,1); }
+  .fighter.me .gauge-fill{ background:linear-gradient(90deg,var(--jade),var(--jade-lit)); }
+  .fighter.opp .gauge-fill{ background:linear-gradient(90deg,var(--seal-lit),var(--seal)); margin-left:auto; }
+  .fighter .gauge-num{ font-size:11px; color:var(--ink-muted); font-variant-numeric:tabular-nums; }
+  .vs-mark{ font-family:'Nanum Brush Script',cursive; font-size:30px; color:var(--brass); line-height:1; }
+
+  /* ---------- timer (대결모드) ---------- */
+  .timer-track{ height:6px; border-radius:99px; background:#0c0b08; border:1px solid var(--line); overflow:hidden; }
+  .timer-fill{ height:100%; background:linear-gradient(90deg,var(--brass),#e0be7c); transition:width 1s linear, background-color .3s; }
+  .timer-label{ font-size:11px; color:var(--ink-muted); text-align:center; margin-top:4px; letter-spacing:.05em;}
+
+  /* ---------- cards (대결모드) ---------- */
+  .card-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  @media (max-width:480px){ .card-grid{ grid-template-columns:1fr; } }
+  .arg-card{
+    background:linear-gradient(180deg,var(--paper),var(--paper-2)); color:#241f14;
+    border:1px solid #6d5f3d; border-radius:5px; padding:14px 16px;
+    font-size:14px; line-height:1.55; text-align:left; cursor:pointer;
+    font-family:'Noto Sans KR',sans-serif; box-shadow:0 2px 0 #4c4227;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .arg-card:hover:not(:disabled), .arg-card:focus-visible{ transform:translateY(-3px); box-shadow:0 5px 0 #4c4227; outline:none; }
+  .arg-card:disabled{ cursor:default; opacity:.45; }
+  .arg-card.chosen{ outline:2px solid var(--brass); opacity:1; }
+
+  /* ---------- 훈련모드 카드 ---------- */
+  .train-progress{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-muted); letter-spacing:.04em; }
+  .train-gauge-wrap{ display:flex; flex-direction:column; gap:4px; }
+  .train-gauge-track{
+    width:100%; height:14px; border-radius:99px; background:#0c0b08;
+    border:1px solid var(--line); overflow:hidden;
+  }
+  .train-gauge-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--brass),#e0be7c); transition:width .5s cubic-bezier(.4,0,.2,1); }
+  .train-gauge-num{ font-size:11px; color:var(--ink-muted); text-align:right; font-variant-numeric:tabular-nums; }
+
+  .train-card{
+    border:1px solid var(--line); border-radius:8px; background:var(--ink-2);
+    padding:24px 20px; display:flex; flex-direction:column; gap:18px; text-align:center;
+  }
+  .train-arg{ font-size:16.5px; line-height:1.7; color:var(--ink-text); font-weight:500; text-wrap:balance; }
+  .train-choices{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:480px){ .train-choices{ grid-template-columns:1fr; } }
+  .choice-btn{
+    font-family:'Nanum Myeongjo',serif; font-size:18px; font-weight:700;
+    padding:14px 12px; border-radius:6px; border:1px solid var(--brass);
+    background:transparent; color:var(--ink-text); cursor:pointer;
+    transition:background-color .12s, transform .12s;
+  }
+  .choice-btn:hover:not(:disabled){ background:rgba(166,135,76,.15); transform:translateY(-2px); }
+  .choice-btn:disabled{ cursor:default; opacity:.5; }
+  .choice-btn.right{ border-color:var(--jade-lit); color:var(--jade-lit); background:rgba(111,150,134,.12); }
+  .choice-btn.wrong{ border-color:var(--seal-lit); color:var(--seal-lit); background:rgba(196,64,47,.12); }
+
+  .train-feedback{ font-size:12.5px; color:var(--ink-muted); line-height:1.6; min-height:1.6em; }
+
+  .issue-break, .train-summary{
+    border:1px solid var(--brass); border-radius:8px; padding:24px 20px;
+    background:var(--ink-2); text-align:center; display:flex; flex-direction:column; gap:12px;
+  }
+  .issue-break .big, .train-summary .big{ font-family:'Nanum Myeongjo',serif; font-size:22px; font-weight:800; }
+  .wrong-list{ text-align:left; display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+  .wrong-item{ border-top:1px dashed var(--line); padding-top:10px; font-size:12.5px; line-height:1.6; color:#cabf9f; }
+  .wrong-item b{ color:var(--seal-lit); }
+  .wrong-item .hint{ color:var(--ink-muted); display:block; margin-top:4px; }
+
+  /* ---------- log (대결모드) ---------- */
+  .log{
+    border:1px solid var(--line); border-radius:6px; background:var(--ink-2);
+    padding:12px 14px; min-height:78px; max-height:230px; overflow-y:auto;
+    display:flex; flex-direction:column; gap:6px; font-size:13.5px; line-height:1.55;
+  }
+  .log .empty{ color:var(--ink-muted); font-style:normal; }
+  .log-line{ animation:rise .25s ease both; }
+  .log-line b{ color:var(--brass); font-weight:700; }
+  .log-line.crit{ color:#e7c98f; }
+  .log-line.trap{ color:#e08b7d; }
+  .log-line.noise{ color:var(--ink-muted); }
+  .log-divider{ text-align:center; font-size:11px; color:var(--ink-muted); letter-spacing:.1em; border-top:1px dashed var(--line); padding-top:6px; margin-top:2px; }
+  @keyframes rise{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---------- stamp (공용) ---------- */
+  .stamp-wrap{ position:relative; height:0; }
+  .stamp{
+    position:absolute; top:-58px; left:50%; transform:translateX(-50%) scale(0) rotate(-18deg);
+    width:88px; height:88px; border:5px solid var(--seal); border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Nanum Brush Script',cursive; font-size:44px; color:var(--seal);
+    background:rgba(156,43,34,.06); pointer-events:none; z-index:5;
+  }
+  .stamp.show{ animation:stampIn .5s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes stampIn{
+    0%{ transform:translateX(-50%) scale(2.4) rotate(-18deg); opacity:0; }
+    60%{ transform:translateX(-50%) scale(.92) rotate(-10deg); opacity:1; }
+    100%{ transform:translateX(-50%) scale(1) rotate(-12deg); opacity:1; }
+  }
+
+  /* ---------- result (대결모드) ---------- */
+  .result-panel{
+    border:1px solid var(--brass); border-radius:6px; padding:22px 20px;
+    background:var(--ink-2); text-align:center; display:flex; flex-direction:column; gap:12px;
+  }
+  .result-panel .verdict{ font-family:'Nanum Myeongjo',serif; font-size:26px; font-weight:800; }
+  .result-panel .verdict.win{ color:var(--jade-lit); }
+  .result-panel .verdict.lose{ color:var(--seal-lit); }
+  .result-panel .verdict.draw{ color:var(--brass); }
+  .result-panel .note{ font-size:12.5px; color:var(--ink-muted); line-height:1.6; }
+
+  .btn-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:4px; }
+  .btn{
+    font-family:'Noto Sans KR',sans-serif; font-size:13.5px; font-weight:700;
+    padding:10px 18px; border-radius:5px; border:1px solid var(--brass);
+    background:transparent; color:var(--brass); cursor:pointer;
+  }
+  .btn:hover{ background:var(--brass); color:var(--ink); }
+  .btn.primary{ background:var(--seal); border-color:var(--seal); color:var(--ink-text); }
+  .btn.primary:hover{ background:var(--seal-lit); }
+
+  .proto-note{
+    font-size:11.5px; color:var(--ink-muted); text-align:center; line-height:1.7;
+    border-top:1px dashed var(--line); padding-top:12px; margin-top:4px;
+  }
+
+  [hidden]{ display:none !important; }
+
+  @media (prefers-reduced-motion: reduce){
+    .stamp.show{ animation:none; transform:translateX(-50%) scale(1) rotate(-12deg); opacity:1; }
+    .log-line{ animation:none; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="masthead">
+    <div class="eyebrow">사상가 설전 · 프로토타입 v1</div>
+    <h1>훈련으로 익히고, 대결로 겨룬다</h1>
+    <div class="sub">쟁점DB 15개 항목을 기반으로 한 두 갈래 게임 — 훈련모드(인식 드릴) · 대결모드(3라운드 배틀)</div>
+  </div>
+
+  <!-- ============ SCREEN 0 : 메인 메뉴 ============ -->
+  <section id="screen-menu">
+    <div class="track-grid">
+      <button class="track-card train" id="btn-go-train">
+        <div class="glyph">學</div>
+        <div class="eyebrow">훈련모드</div>
+        <div class="title">쟁점 인식 훈련</div>
+        <div class="desc">쟁점 하나당 두 사상가의 논거 6장을 무작위로 보여줍니다. 시간 압박 없이, 이전에 다룬 쟁점은 피해서 새로운 조합으로 계속 연습할 수 있습니다.</div>
+      </button>
+      <button class="track-card battle" id="btn-go-battle">
+        <div class="glyph">爭</div>
+        <div class="eyebrow">대결모드</div>
+        <div class="title">사상가 설전</div>
+        <div class="desc">사상가 한쪽을 골라 3라운드 동안 논거 카드로 맞붙습니다. 제한시간 안에 진짜 논거를 골라 상대의 설득력을 무너뜨리세요.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ 훈련모드 ============ -->
+  <section id="screen-training" hidden>
+    <button class="backlink" id="back-from-training">← 메인으로</button>
+
+    <div class="issue-banner" style="margin-top:8px;">
+      <div class="hanja" id="train-hanja">學</div>
+      <div class="cat" id="train-cat">쟁점 1/3</div>
+      <div class="q" id="train-question">—</div>
+    </div>
+
+    <div class="train-gauge-wrap">
+      <div class="train-gauge-track"><div class="train-gauge-fill" id="train-gauge" style="width:0%"></div></div>
+      <div class="train-gauge-num"><span id="train-gauge-num">0</span>% 정답 게이지</div>
+    </div>
+
+    <!-- 카드 진행 화면 -->
+    <div id="train-view-card">
+      <div class="train-progress">
+        <span id="train-issue-progress">쟁점 1/3</span>
+        <span id="train-card-progress">카드 1/6</span>
+      </div>
+      <div class="stamp-wrap"><div class="stamp" id="stamp-train">X</div></div>
+      <div class="train-card">
+        <div class="train-arg" id="train-arg-text">—</div>
+        <div class="train-choices" id="train-choices"></div>
+        <div class="train-feedback" id="train-feedback"></div>
+      </div>
+    </div>
+
+    <!-- 쟁점 완료 후 여유 화면 -->
+    <div id="train-view-break" hidden>
+      <div class="issue-break">
+        <div class="big" id="break-title">이 쟁점 완료</div>
+        <div id="break-detail" style="font-size:13.5px;color:var(--ink-muted);"></div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-next-issue">다음 쟁점으로</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 세션 종료 요약 화면 -->
+    <div id="train-view-summary" hidden>
+      <div class="train-summary">
+        <div class="big" id="summary-title">훈련 종료</div>
+        <div id="summary-detail" style="font-size:13.5px;color:var(--ink-muted);"></div>
+        <div id="summary-wrong" class="wrong-list"></div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-train-again">다른 쟁점으로 다시 훈련</button>
+          <button class="btn" id="btn-train-to-menu">메인으로</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 대결모드 : 사상가 선택 ============ -->
+  <section id="screen-select" hidden>
+    <button class="backlink" id="back-from-select">← 메인으로</button>
+    <div class="issue-banner" style="margin:8px 0 14px;">
+      <div class="hanja">爭</div>
+      <div class="cat">인간 본성론</div>
+      <div class="q">인간의 본성은 본래 선한가, 악한가?</div>
+    </div>
+    <div class="pick-grid">
+      <button class="pick-card" data-side="a">
+        <div class="who">맹자<small>孟子 · 성선설</small></div>
+        <div class="stance">인간은 선천적으로 선한 본성(사단)을 타고난다. 이 편을 골라 순자를 논파하세요.</div>
+      </button>
+      <button class="pick-card" data-side="b">
+        <div class="who">순자<small>荀子 · 성악설</small></div>
+        <div class="stance">인간은 본래 이익을 다투는 악한 본성을 지녔다. 이 편을 골라 맹자를 논파하세요.</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ 대결모드 : 배틀 ============ -->
+  <section id="screen-battle" hidden>
+    <div class="issue-banner">
+      <div class="hanja">爭</div>
+      <div class="cat" id="round-cat">1라운드 · 논거 선택</div>
+      <div class="q">인간의 본성은 본래 선한가, 악한가?</div>
+    </div>
+
+    <div>
+      <div class="round-tracker" id="round-tracker">
+        <div class="round-dot" data-r="1"></div>
+        <div class="round-dot" data-r="2"></div>
+        <div class="round-dot" data-r="3"></div>
+      </div>
+      <div class="round-label">3판 승부 · 논거 3장 완전 소진전</div>
+    </div>
+
+    <div class="vs-row">
+      <div class="fighter me">
+        <div class="name" id="name-me">맹자</div>
+        <div class="tag">나의 사상가</div>
+        <div class="gauge-track"><div class="gauge-fill" id="gauge-me" style="width:100%"></div></div>
+        <div class="gauge-num"><span id="num-me">100</span> 설득력</div>
+      </div>
+      <div class="vs-mark">對</div>
+      <div class="fighter opp">
+        <div class="name" id="name-opp">순자</div>
+        <div class="tag">상대 사상가</div>
+        <div class="gauge-track"><div class="gauge-fill" id="gauge-opp" style="width:100%"></div></div>
+        <div class="gauge-num"><span id="num-opp">100</span> 설득력</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+      <div class="timer-label" id="timer-label">18초 안에 내 사상가의 진짜 논거를 고르세요</div>
+    </div>
+
+    <div class="stamp-wrap"><div class="stamp" id="stamp">X</div></div>
+
+    <div class="card-grid" id="card-grid"></div>
+
+    <div class="log" id="log"><div class="empty">— 대결 기록이 여기 표시됩니다 —</div></div>
+  </section>
+
+  <!-- ============ 대결모드 : 결과 ============ -->
+  <section id="screen-result" hidden>
+    <div class="result-panel">
+      <div class="verdict" id="verdict-text">결과</div>
+      <div id="result-gauges" style="font-size:13.5px;color:var(--ink-muted);"></div>
+      <div class="note" id="result-note"></div>
+      <div class="btn-row">
+        <button class="btn primary" id="btn-retry-side">같은 사상가로 다시</button>
+        <button class="btn" id="btn-retry-pick">사상가 다시 고르기</button>
+        <button class="btn" id="btn-battle-to-menu">메인으로</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="proto-note">
+    프로토타입 범위 안내 — v1은 두 사상가의 이름이 명확히 특정되지 않는 쟁점(자유주의·평화주의처럼 특정 인물이 아닌 사조로만 표시되던 항목)을 제외하고 15개 쟁점으로 구성했습니다. 나머지 쟁점은 이후 버전에서 순차적으로 추가할 예정입니다.<br/>
+    훈련모드는 이 15개 항목을 대상으로 매 세션 3개 쟁점(총 18장)을 무작위로 뽑되, 이 브라우저에서 최근 훈련한 쟁점은 모두 소진한 뒤에야 다시 등장하도록 기억합니다(브라우저 저장 공간 사용, 기기를 바꾸면 초기화됩니다).<br/>
+    대결모드는 아직 쟁점 1개(맹자 vs 순자)만 구현되어 있으며, 다른 쟁점으로의 확장은 다음 단계로 남아 있습니다.
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+  // ============================================================
+  // 데이터 — 쟁점DB v0 (17개 항목)
+  // ============================================================
+  var ISSUES = [
+    { id:"ISS-001", cat:"인간 본성론", q:"인간의 본성은 본래 선한가, 악한가?",
+      a:{ name:"맹자", args:[
+        "사람은 누구나 우물에 빠지려는 아이를 보면 측은지심을 느낀다",
+        "인의예지의 단서인 사단이 본래 마음에 내재한다",
+        "본성을 잘 확충하면 누구나 성인이 될 수 있다" ]},
+      b:{ name:"순자", args:[
+        "인간은 방치하면 이익을 다투고 질서가 무너진다",
+        "선한 행위는 후천적 예와 인위적 교육에 의해서만 가능하다",
+        "스승의 가르침과 법도를 통한 교화가 필요하다" ]},
+      trap:"맹자의 '확충'과 순자의 '화성기위(化性起僞)'를 혼동하기 쉽습니다 — 맹자는 본래 선한 것을 키워나가고, 순자는 악한 본성을 후천적으로 바꾸려 합니다." },
+
+    { id:"ISS-002", cat:"정치철학·국가론", q:"국가 권력은 절대적이어야 하는가, 제한적이어야 하는가?",
+      a:{ name:"홉스", args:[
+        "자연 상태는 '만인의 만인에 대한 투쟁' 상태이다",
+        "개인들은 평화를 위해 자연권을 포기하고 주권자에게 양도하는 계약을 맺는다",
+        "주권자의 권력은 나뉘거나 제한될 수 없으며 저항권은 인정되지 않는다" ]},
+      b:{ name:"로크", args:[
+        "자연 상태는 이성에 따라 비교적 평화롭지만 분쟁 해결 기구가 없어 불편하다",
+        "시민은 자연권 보호를 조건으로 정부에 권력을 신탁한다",
+        "정부가 신탁을 어기면 시민은 저항권(혁명권)을 행사할 수 있다" ]},
+      trap:"둘 다 '사회계약'을 말하지만 계약의 결과(절대군주 vs 제한정부)와 저항권 인정 여부가 정반대임을 놓치기 쉽습니다." },
+
+    { id:"ISS-003", cat:"정치철학·국가론", q:"사회계약의 목적은 개인의 재산 보호인가, 일반의지의 실현인가?",
+      a:{ name:"로크", args:[
+        "노동을 통해 자연물에 가치를 부여한 것이 사유재산의 근거이다",
+        "정부의 역할은 개인의 소유권을 침해로부터 지키는 데 있다",
+        "다수결로 운영되는 대의 정부를 지지한다" ]},
+      b:{ name:"루소", args:[
+        "사적 의지의 총합이 아니라 공공선을 지향하는 일반의지에 복종해야 진정한 자유이다",
+        "사유재산과 문명의 발달이 불평등을 심화시켰다고 비판한다",
+        "직접민주주의적 인민주권을 이상으로 본다" ]},
+      trap:"로크의 '다수의 동의'와 루소의 '일반의지'를 같은 개념으로 혼동하기 쉽습니다 — 로크는 개인 권리 보호, 루소는 개인을 넘어선 공동체 의지가 목적입니다." },
+
+    { id:"ISS-004", cat:"윤리 이론", q:"도덕적 옳고 그름의 기준은 행위의 결과인가, 행위 자체의 의무인가?",
+      a:{ name:"칸트", args:[
+        "준칙이 항상 보편적 입법의 원리가 될 수 있도록 행위해야 한다(정언명령)",
+        "인간을 항상 목적으로 대우하고 결코 수단으로만 대우해서는 안 된다",
+        "선의지만이 무조건적으로 선하며, 의무에서 나온 행위만이 도덕적 가치를 지닌다" ]},
+      b:{ name:"벤담", args:[
+        "인간은 쾌락을 추구하고 고통을 회피하는 존재라는 공리의 원리를 따른다",
+        "쾌락은 강도·지속성·확실성 등으로 계산 가능하다",
+        "사회 전체 행복(효용)의 총합을 극대화하는 행위가 옳다" ]},
+      trap:"칸트의 '보편화 가능성'과 벤담의 '최대 다수의 행복'을 혼동해 둘 다 결과를 중시한다고 오해하기 쉽습니다." },
+
+    { id:"ISS-005", cat:"윤리 이론", q:"쾌락은 양적으로만 차이 나는가, 질적으로도 차이 나는가?",
+      a:{ name:"벤담", args:[
+        "모든 쾌락을 동등한 것으로 놓고 계산할 수 있다",
+        "강도·지속성·확실성·근접성 등 7가지 기준으로 쾌락의 양을 측정한다",
+        "개인의 행복을 산술적으로 합산해 사회 전체 효용을 계산할 수 있다" ]},
+      b:{ name:"밀", args:[
+        "만족한 돼지보다 불만족한 소크라테스가 낫다며 고급 쾌락과 저급 쾌락을 구분한다",
+        "두 쾌락을 모두 경험해본 사람의 선호가 질적 우열의 판단 기준이 된다",
+        "정의감, 인격의 존엄 등 내적 제재를 공리주의에 접목시켰다" ]},
+      trap:"밀을 벤담과 동일한 '양적 공리주의자'로, 혹은 반대로 칸트식 의무론자로 착각하기 쉽습니다 — 밀도 여전히 행복(공리)을 기준으로 삼는 공리주의자입니다." },
+
+    { id:"ISS-006", cat:"정의론·분배", q:"정의로운 분배의 기준은 공정한 절차인가, 소유권의 정당한 취득·이전 과정인가?",
+      a:{ name:"롤스", args:[
+        "원초적 입장과 무지의 베일이라는 사고실험을 통해 공정한 합의를 도출한다",
+        "평등한 자유의 원칙이 차등의 원칙에 우선한다",
+        "사회·경제적 불평등은 최소 수혜자에게 최대 이익이 될 때만 정당화된다(차등의 원칙)" ]},
+      b:{ name:"노직", args:[
+        "개인의 소유권은 국가가 침해할 수 없는 절대적 권리이다",
+        "재분배를 위한 과세는 개인의 노동에 대한 강제 노동과 다름없다",
+        "국가는 개인의 권리 보호에 필요한 최소 국가(야경국가)에 머물러야 한다" ]},
+      trap:"롤스의 '차등의 원칙'을 결과의 균등 분배로, 노직의 입장을 단순 자유방임으로만 단순화해 절차적 정당성 논리를 놓치기 쉽습니다." },
+
+    { id:"ISS-007", cat:"정의론·분배", q:"사유재산은 노동에 의해 정당화되는가, 착취의 산물인가?",
+      a:{ name:"로크", args:[
+        "신체와 노동은 각자의 것이므로 노동이 섞인 대상도 그의 것이 된다",
+        "타인에게 충분하고 좋은 것이 남아 있는 한 사유화는 정당하다",
+        "화폐의 발명으로 부패 없이 재산을 축적할 수 있게 되었다" ]},
+      b:{ name:"마르크스", args:[
+        "노동자는 자신의 노동력을 상품으로 판매할 수밖에 없는 구조에 놓인다",
+        "자본가는 노동자가 생산한 가치보다 적은 임금을 지불함으로써 잉여가치를 착취한다",
+        "생산수단의 사적 소유를 폐지하고 공유화해야 인간 소외를 극복할 수 있다" ]},
+      trap:"로크가 정당화하는 '노동에 의한 사유재산'과 마르크스가 비판하는 '자본주의적 사적 소유(생산수단)'의 대상이 다름을 구분하지 못하는 경우가 많습니다." },
+
+    { id:"ISS-008", cat:"자유와 공동체", q:"개인은 공동체와 무관하게 독립적인 존재인가, 공동체 속에서 정체성이 구성되는 존재인가?",
+      a:{ name:"노직", args:[
+        "자기 소유권이 모든 권리의 출발점이다",
+        "개인 간의 자발적 교환과 계약만이 정의로운 사회적 관계를 만든다",
+        "공동체를 위한 강제적 재분배는 개인의 자유를 침해한다" ]},
+      b:{ name:"매킨타이어", args:[
+        "자아는 '연고적 자아'로서 가족·공동체·전통 속에서 부여받은 역할과 책무를 지닌다",
+        "개인주의적 자유주의는 공동체가 주는 유대와 미덕의 전통을 훼손한다",
+        "좋은 삶(덕)은 공동체의 실천 전통 안에서만 의미를 가진다" ]},
+      trap:"공동체주의를 전체주의·국가주의로 오해하거나, 자유지상주의를 단순 이기주의로 단순화하는 오류에 유의해야 합니다." },
+
+    { id:"ISS-009", cat:"처벌과 형벌", q:"처벌의 본질적 목적은 응보인가, 범죄 예방과 교화인가?",
+      a:{ name:"칸트", args:[
+        "동등성의 원리에 따라 살인자는 사형에 처해야 한다",
+        "범죄자를 사회 방위나 교화의 '수단'으로 이용하는 것은 인간 존엄성을 훼손한다",
+        "처벌은 범죄라는 과거 행위에 대한 정당한 응답이어야 한다" ]},
+      b:{ name:"벤담", args:[
+        "처벌의 목적은 범죄자의 교화와 잠재적 범죄자에 대한 억제에 있다",
+        "처벌의 고통이 범죄로 얻는 이익보다 커야 억제 효과가 있다",
+        "지나치게 가혹하거나 무용한 처벌은 효용을 감소시킨다" ]},
+      trap:"칸트의 사형 찬성 논거(응보)와 벤담의 조건부 입장(효용 계산)을 같은 이유로 착각하기 쉽습니다." },
+
+    { id:"ISS-010", cat:"처벌과 형벌", q:"사형제도는 정당한 형벌인가, 폐지되어야 하는가?",
+      a:{ name:"칸트", args:[
+        "동등성의 원리(같은 것으로 갚음)에 근거한 응보적 정의를 따라야 한다",
+        "죄에 상응하는 책임을 지우는 것이 범죄자의 인간 존엄성을 존중하는 것이다",
+        "사회계약에 동의한 이상 그 계약을 어긴 자는 스스로 대가를 받아들인 것이다" ]},
+      b:{ name:"베카리아", args:[
+        "생명은 양도 불가능하므로 사회계약이 생명을 국가에 양도하는 계약이 될 수 없다",
+        "범죄 억제 효과는 형벌의 강도보다 확실성·신속성에 달려 있다",
+        "오판 가능성과 생명의 불가역성을 근거로 사형에 반대한다" ]},
+      trap:"베카리아를 순수 공리주의자로 단정하기 쉬우나, 그는 사회계약론(생명 양도 불가)과 공리적 근거를 함께 사용합니다." },
+
+    { id:"ISS-011", cat:"생명·환경 윤리", q:"동물은 인간과 동등한 도덕적 고려의 대상인가?",
+      a:{ name:"싱어", args:[
+        "이익 평등 고려의 원칙 — 동일한 고통은 그것을 느끼는 존재가 누구든 동일하게 취급되어야 한다",
+        "공장식 축산 등 동물에게 불필요한 고통을 주는 관행은 정당화될 수 없다",
+        "종만을 기준으로 이익을 차별하는 것은 종차별주의라는 논리적 오류이다" ]},
+      b:{ name:"칸트", args:[
+        "도덕적 의무는 이성적 존재(인격) 간에만 성립하며 동물은 인격체가 아니다",
+        "동물을 함부로 대하는 것이 금지되는 이유는 인간의 잔인한 성향을 조장하기 때문이다",
+        "도덕적 지위의 근거를 이성적 자율성에 둔다" ]},
+      trap:"싱어를 '동물권 옹호론자'로만 알고, 그의 논거가 '권리'가 아니라 '이익의 평등한 고려(공리주의)'에 기반한다는 점을 놓치기 쉽습니다." },
+
+    { id:"ISS-014", cat:"동양사상", q:"사랑(仁)은 가까운 사람부터 차등적으로 베풀어야 하는가, 모든 사람에게 차별 없이 베풀어야 하는가?",
+      a:{ name:"공자", args:[
+        "효제야말로 인을 행하는 근본이라며 가족 윤리를 도덕의 출발점으로 삼는다",
+        "친소와 관계의 원근에 따라 사랑의 정도가 달라지는 것이 자연스러운 인륜이다",
+        "예를 통해 신분과 관계에 따른 질서를 실현하고자 한다" ]},
+      b:{ name:"묵자", args:[
+        "남을 내 몸같이, 남의 집을 내 집같이 여기는 겸애가 실현되면 다툼이 사라진다",
+        "유가의 차등적 사랑(별애)이 오히려 편애와 다툼, 사회 혼란의 원인이라고 비판한다",
+        "겸애와 함께 침략 전쟁에 반대하는 비공을 주장한다" ]},
+      trap:"묵자의 '겸애'를 유가의 '인'과 정도 차이로만 이해하고, 근본적으로 '차등 vs 무차별'의 대립 구도임을 놓치는 경우가 많습니다." },
+
+    { id:"ISS-015", cat:"동양사상", q:"이상적인 다스림은 인위적 규범(예)을 통한 교화인가, 인위를 배제한 무위자연인가?",
+      a:{ name:"순자", args:[
+        "예는 사람들의 끝없는 욕망 다툼을 조절하기 위해 성인이 만든 인위적 장치이다",
+        "스승의 가르침과 법도를 통해 인간을 교화해야 한다",
+        "신분과 역할에 따른 예의 질서가 사회를 안정시킨다" ]},
+      b:{ name:"노자", args:[
+        "인위적으로 하지 않아도 다스려지지 않음이 없다(무위지치)",
+        "인의예지와 같은 인위적 규범 자체가 도에서 멀어졌기 때문에 생겨난 것이다",
+        "소국과민처럼 인위적 문명을 최소화한 소박한 삶을 이상으로 제시한다" ]},
+      trap:"노자의 '무위'를 아무것도 하지 않는 방임으로 단순화하거나, 유가의 '예'를 겉치레 형식으로만 이해하는 오류에 유의해야 합니다." },
+
+    { id:"ISS-016", cat:"동양사상", q:"이(理)는 마음 밖에 별도로 존재하는 원리인가, 마음 그 자체인가?",
+      a:{ name:"주희", args:[
+        "성즉리 — 인간의 본성이 곧 하늘이 부여한 이(理)라고 본다",
+        "이와 기는 서로 떨어질 수도 섞일 수도 없다",
+        "사물에 나아가 이치를 탐구하는 격물치지의 공부를 강조한다" ]},
+      b:{ name:"왕수인", args:[
+        "심즉리 — 마음이 곧 이치이므로 마음 밖에서 이치를 구할 필요가 없다",
+        "앎과 행함은 본래 하나라는 지행합일을 주장한다",
+        "타고난 도덕적 자각 능력인 양지를 그대로 실현하는 치양지를 강조한다" ]},
+      trap:"주희의 '격물치지'와 왕수인의 '치양지'를 비슷한 수양법으로 혼동하기 쉬우나, 전자는 외부 사물의 이치 탐구, 후자는 내면의 양지 실현이라는 점에서 방향이 반대입니다." },
+
+    { id:"ISS-017", cat:"동양사상", q:"사단(四端)과 칠정(七情)은 서로 다른 근원에서 발한 것인가, 모두 기가 발한 것인가?",
+      a:{ name:"이황", args:[
+        "사단은 순선한 것이므로 그 근원을 이(理)의 발함에 두어야 한다",
+        "이와 기를 엄격히 구분하여 이의 능동성과 존귀함을 강조한다",
+        "경(敬)의 실천을 통한 도덕적 수양을 중시한다" ]},
+      b:{ name:"이이", args:[
+        "발하는 것은 오직 기(氣)뿐이며 이는 발하는 기를 타고 있을 뿐이다",
+        "이(理)는 스스로 움직이지 못하는 무위한 존재이므로 발할 수 없다고 본다",
+        "현실의 개혁과 경세치용을 중시하는 실천적 성향을 지닌다" ]},
+      trap:"'이황=이 중심, 이이=기 중심'이라는 도식만 외우고, 정작 두 이론이 다투는 핵심 쟁점(이가 발할 수 있는가 없는가)을 설명하지 못하는 경우가 많습니다." }
+  ];
+
+  var BATTLE_ISSUE = ISSUES[0]; // 대결모드는 현재 ISS-001(맹자 vs 순자)만 사용
+  var ROUND_SECONDS = 18;
+  var TOTAL_ROUNDS = 3;
+  var TRAIN_ISSUES_PER_SESSION = 3;
+  var TRAIN_POOL_KEY = "seolsjeon_training_pool_v1";
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function clamp(n){ return Math.max(0, Math.min(100, n)); }
+  function $(id){ return document.getElementById(id); }
+
+  function showScreen(id){
+    ["screen-menu","screen-training","screen-select","screen-battle","screen-result"].forEach(function(s){
+      $(s).hidden = (s !== id);
+    });
+  }
+
+  // ============================================================
+  // 훈련모드
+  // ============================================================
+  var tr = null;
+
+  function loadPool(){
+    try{
+      var raw = localStorage.getItem(TRAIN_POOL_KEY);
+      if (raw){ var arr = JSON.parse(raw); if (Array.isArray(arr)) return arr; }
+    }catch(e){ /* 저장 공간 접근 불가 — 그냥 매번 새로 섞음 */ }
+    return null;
+  }
+  function savePool(arr){
+    try{ localStorage.setItem(TRAIN_POOL_KEY, JSON.stringify(arr)); }catch(e){}
+  }
+  function pickSessionIssues(n){
+    var pool = loadPool();
+    if (!pool || pool.length < n){
+      pool = shuffle(ISSUES.map(function(x){ return x.id; }));
+    }
+    var chosenIds = pool.slice(0, n);
+    savePool(pool.slice(n));
+    return chosenIds.map(function(id){
+      var found = null;
+      ISSUES.forEach(function(iss){ if (iss.id === id) found = iss; });
+      return found;
+    });
+  }
+
+  function startTrainingSession(){
+    var issues = pickSessionIssues(TRAIN_ISSUES_PER_SESSION);
+    tr = {
+      issues: issues,
+      issueIndex: 0,
+      totalCards: issues.length * 6,
+      correctCount: 0,
+      answeredCount: 0,
+      wrongList: []
+    };
+    $("train-gauge").style.width = "0%";
+    $("train-gauge-num").textContent = "0";
+    showScreen("screen-training");
+    beginTrainingIssue();
+  }
+
+  function beginTrainingIssue(){
+    var issue = tr.issues[tr.issueIndex];
+    tr.cardQueue = shuffle(
+      issue.a.args.map(function(t){ return { side:"a", text:t }; })
+      .concat(issue.b.args.map(function(t){ return { side:"b", text:t }; }))
+    );
+    tr.cardIndex = 0;
+    tr.issueCorrect = 0;
+
+    $("train-cat").textContent = issue.cat + " · 쟁점 " + (tr.issueIndex+1) + "/" + tr.issues.length;
+    $("train-question").textContent = issue.q;
+    $("train-hanja").textContent = "學";
+    $("train-issue-progress").textContent = "쟁점 " + (tr.issueIndex+1) + "/" + tr.issues.length;
+
+    $("train-view-summary").hidden = true;
+    $("train-view-break").hidden = true;
+    $("train-view-card").hidden = false;
+
+    renderTrainingCard();
+  }
+
+  function renderTrainingCard(){
+    var issue = tr.issues[tr.issueIndex];
+    var card = tr.cardQueue[tr.cardIndex];
+
+    $("train-card-progress").textContent = "카드 " + (tr.cardIndex+1) + "/6";
+    $("train-arg-text").textContent = card.text;
+    $("train-feedback").textContent = "";
+
+    var choices = shuffle([
+      { side:"a", name: issue.a.name },
+      { side:"b", name: issue.b.name }
+    ]);
+
+    var wrap = $("train-choices");
+    wrap.innerHTML = "";
+    choices.forEach(function(c){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "choice-btn";
+      btn.textContent = c.name;
+      btn.addEventListener("click", function(){ onTrainingAnswer(c.side, btn); });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function onTrainingAnswer(chosenSide, btnEl){
+    var issue = tr.issues[tr.issueIndex];
+    var card = tr.cardQueue[tr.cardIndex];
+    var correct = (chosenSide === card.side);
+
+    Array.prototype.forEach.call($("train-choices").children, function(el){
+      el.disabled = true;
+      var sideOfBtn = (el.textContent === issue.a.name) ? "a" : "b";
+      if (sideOfBtn === card.side) el.classList.add("right");
+      else if (el === btnEl) el.classList.add("wrong");
+    });
+
+    tr.answeredCount += 1;
+
+    if (correct){
+      tr.correctCount += 1;
+      tr.issueCorrect += 1;
+      fireStamp("stamp-train", "O", true);
+      $("train-feedback").textContent = "정답 — " + issue[card.side].name + "의 논거였습니다.";
+    } else {
+      fireStamp("stamp-train", "X", false);
+      $("train-feedback").textContent = "오답 — 실제로는 " + issue[card.side].name + "의 논거였습니다. " + issue.trap;
+      tr.wrongList.push({
+        q: issue.q, text: card.text, correctName: issue[card.side].name, trap: issue.trap
+      });
+    }
+
+    var pct = Math.round((tr.correctCount / tr.totalCards) * 100);
+    $("train-gauge").style.width = pct + "%";
+    $("train-gauge-num").textContent = pct;
+
+    setTimeout(function(){
+      tr.cardIndex += 1;
+      if (tr.cardIndex < tr.cardQueue.length){
+        renderTrainingCard();
+      } else {
+        showIssueBreak();
+      }
+    }, 1300);
+  }
+
+  function showIssueBreak(){
+    var issue = tr.issues[tr.issueIndex];
+    var isLast = (tr.issueIndex >= tr.issues.length - 1);
+
+    $("train-view-card").hidden = true;
+    $("break-title").textContent = "“" + issue.q + "” 훈련 완료";
+    $("break-detail").textContent =
+      issue.a.name + " vs " + issue.b.name + " — 6문항 중 " + tr.issueCorrect + "개 정답";
+    $("btn-next-issue").textContent = isLast ? "결과 보기" : "다음 쟁점으로";
+    $("train-view-break").hidden = false;
+  }
+
+  function goToNextIssueOrSummary(){
+    if (tr.issueIndex < tr.issues.length - 1){
+      tr.issueIndex += 1;
+      $("train-view-break").hidden = true;
+      beginTrainingIssue();
+    } else {
+      showTrainingSummary();
+    }
+  }
+
+  function showTrainingSummary(){
+    $("train-view-break").hidden = true;
+    $("train-view-card").hidden = true;
+
+    var pct = Math.round((tr.correctCount / tr.totalCards) * 100);
+    $("summary-title").textContent = "훈련 종료 — 정답 게이지 " + pct + "%";
+    $("summary-detail").textContent =
+      tr.issues.map(function(iss){ return iss.a.name + "·" + iss.b.name; }).join(" / ") +
+      " · 총 " + tr.totalCards + "문항 중 " + tr.correctCount + "개 정답";
+
+    var box = $("summary-wrong");
+    box.innerHTML = "";
+    if (tr.wrongList.length === 0){
+      var okDiv = document.createElement("div");
+      okDiv.className = "wrong-item";
+      okDiv.textContent = "이번 세션은 오답이 없었습니다.";
+      box.appendChild(okDiv);
+    } else {
+      tr.wrongList.forEach(function(w){
+        var div = document.createElement("div");
+        div.className = "wrong-item";
+        div.innerHTML = "<b>" + w.correctName + "</b>의 논거 — “" + w.text + "”" +
+                         "<span class='hint'>" + w.trap + "</span>";
+        box.appendChild(div);
+      });
+    }
+
+    $("train-view-summary").hidden = false;
+  }
+
+  function fireStamp(elId, glyph, isCrit){
+    var stamp = $(elId);
+    stamp.textContent = glyph;
+    stamp.style.borderColor = isCrit ? "var(--jade-lit)" : "var(--seal)";
+    stamp.style.color = isCrit ? "var(--jade-lit)" : "var(--seal)";
+    stamp.classList.remove("show");
+    void stamp.offsetWidth;
+    stamp.classList.add("show");
+  }
+
+  // ============================================================
+  // 대결모드 (ISS-001 고정)
+  // ============================================================
+  var m = null;
+  var timerId = null;
+
+  function noisePoolExcept(issueId){
+    var out = [];
+    ISSUES.forEach(function(iss){
+      if (iss.id === issueId) return;
+      out = out.concat(iss.a.args, iss.b.args);
+    });
+    return out;
+  }
+
+  function initMatch(side){
+    var oppSide = side === "a" ? "b" : "a";
+    m = {
+      side: side, oppSide: oppSide,
+      gauges: { a:100, b:100 },
+      round: 1,
+      over: false,
+      myArgOrder:  shuffle(BATTLE_ISSUE[side].args),
+      oppArgOrder: shuffle(BATTLE_ISSUE[oppSide].args),
+      noiseChunks: (function(){
+        var deck = shuffle(noisePoolExcept(BATTLE_ISSUE.id)).slice(0, TOTAL_ROUNDS * 3);
+        return [ deck.slice(0,3), deck.slice(3,6), deck.slice(6,9) ];
+      })(),
+      resolved: false,
+      timeLeft: ROUND_SECONDS
+    };
+
+    $("name-me").textContent = BATTLE_ISSUE[side].name;
+    $("name-opp").textContent = BATTLE_ISSUE[oppSide].name;
+    renderGauges();
+    clearLog();
+    beginRound();
+    showScreen("screen-battle");
+  }
+
+  function nameOf(key){ return BATTLE_ISSUE[key].name; }
+
+  function beginRound(){
+    var i = m.round - 1;
+    var cards = shuffle([
+      { type:"correct", text: m.myArgOrder[i] },
+      { type:"trap",    text: m.oppArgOrder[i] }
+    ].concat(m.noiseChunks[i].map(function(t){ return {type:"noise", text:t}; })));
+
+    m.cards = cards;
+    m.resolved = false;
+
+    $("round-cat").textContent = m.round + "라운드 · 논거 선택 (" + m.round + "/" + TOTAL_ROUNDS + ")";
+    updateRoundTracker();
+    renderCards();
+    startTimer();
+  }
+
+  function updateRoundTracker(){
+    document.querySelectorAll(".round-dot").forEach(function(dot){
+      var r = parseInt(dot.dataset.r, 10);
+      dot.classList.toggle("done", r < m.round);
+      dot.classList.toggle("current", r === m.round);
+    });
+  }
+
+  function renderGauges(){
+    $("gauge-me").style.width  = m.gauges[m.side] + "%";
+    $("gauge-opp").style.width = m.gauges[m.oppSide] + "%";
+    $("num-me").textContent  = m.gauges[m.side];
+    $("num-opp").textContent = m.gauges[m.oppSide];
+  }
+
+  function renderCards(){
+    var grid = $("card-grid");
+    grid.innerHTML = "";
+    m.cards.forEach(function(card, idx){
+      var btn = document.createElement("button");
+      btn.className = "arg-card";
+      btn.type = "button";
+      btn.textContent = card.text;
+      btn.addEventListener("click", function(){ onPick(idx, btn); });
+      grid.appendChild(btn);
+    });
+  }
+
+  function clearLog(){ $("log").innerHTML = '<div class="empty">— 대결 기록이 여기 표시됩니다 —</div>'; }
+  function logLine(html, cls){
+    var log = $("log");
+    if (log.querySelector(".empty")) log.innerHTML = "";
+    var div = document.createElement("div");
+    div.className = "log-line" + (cls ? " " + cls : "");
+    div.innerHTML = html;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+  function logDivider(text){
+    var log = $("log");
+    if (log.querySelector(".empty")) log.innerHTML = "";
+    var div = document.createElement("div");
+    div.className = "log-divider";
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function startTimer(){
+    clearInterval(timerId);
+    m.timeLeft = ROUND_SECONDS;
+    $("timer-fill").style.width = "100%";
+    $("timer-fill").style.background = "";
+    $("timer-label").textContent = ROUND_SECONDS + "초 안에 내 사상가의 진짜 논거를 고르세요";
+    timerId = setInterval(function(){
+      m.timeLeft -= 0.1;
+      var pct = Math.max(0, (m.timeLeft / ROUND_SECONDS) * 100);
+      $("timer-fill").style.width = pct + "%";
+      if (m.timeLeft <= 5) $("timer-fill").style.background = "linear-gradient(90deg,#c4402f,#e07a68)";
+      if (m.timeLeft <= 0){
+        clearInterval(timerId);
+        onPick(-1, null);
+      }
+    }, 100);
+  }
+
+  function onPick(idx, btnEl){
+    if (m.resolved) return;
+    m.resolved = true;
+    clearInterval(timerId);
+
+    Array.prototype.forEach.call($("card-grid").children, function(el){ el.disabled = true; });
+
+    var meKey = m.side, oppKey = m.oppSide;
+    var timeBonus, card;
+
+    if (idx === -1){
+      m.gauges[meKey] = clamp(m.gauges[meKey] - 10);
+      $("timer-label").textContent = "시간 초과";
+      logLine("<b>말문이 막혔다…</b> 시간 안에 답하지 못해 " + nameOf(meKey) + "의 설득력이 10 줄었습니다.", "noise");
+    } else {
+      card = m.cards[idx];
+      if (btnEl) btnEl.classList.add("chosen");
+
+      if (card.type === "correct"){
+        timeBonus = Math.round(10 * Math.max(0, m.timeLeft) / ROUND_SECONDS);
+        m.gauges[oppKey] = clamp(m.gauges[oppKey] - (30 + timeBonus));
+        fireStamp("stamp", "O", true);
+        logLine("<b>회심의 일격!</b> “" + card.text + "” — 실제 " + nameOf(meKey) + "의 논거였습니다. " +
+                 nameOf(oppKey) + "의 설득력이 " + (30 + timeBonus) + " 줄었습니다. (기본 30 + 신속 보너스 " + timeBonus + ")", "crit");
+      } else if (card.type === "trap"){
+        m.gauges[meKey] = clamp(m.gauges[meKey] - 20);
+        fireStamp("stamp", "X", false);
+        logLine("<b>자충수!</b> “" + card.text + "” — 사실은 " + nameOf(oppKey) + "의 논거였습니다. " +
+                 nameOf(meKey) + "의 설득력이 20 줄었습니다.<br><span style='color:var(--ink-muted);font-size:12.5px;'>" +
+                 BATTLE_ISSUE.trap + "</span>", "trap");
+      } else {
+        logLine("<b>헛스윙.</b> “" + card.text + "” — 이 쟁점과 관련 없는 다른 사상가의 주장이었습니다.", "noise");
+      }
+    }
+
+    renderGauges();
+    if (checkKO()) return;
+    setTimeout(cpuTurn, 1500);
+  }
+
+  function cpuTurn(){
+    var meKey = m.side, oppKey = m.oppSide;
+    var i = m.round - 1;
+    var line = m.oppArgOrder[i];
+    m.gauges[meKey] = clamp(m.gauges[meKey] - 15);
+    renderGauges();
+    logLine("<b>" + nameOf(oppKey) + "의 반격</b> — “" + line + "”. " + nameOf(meKey) + "의 설득력이 15 줄었습니다.");
+
+    if (checkKO()) return;
+
+    if (m.round >= TOTAL_ROUNDS){
+      setTimeout(function(){ finalizeMatch("rounds"); }, 1400);
+    } else {
+      setTimeout(function(){
+        logDivider(m.round + "라운드 종료 — 다음 라운드 준비");
+        m.round += 1;
+        setTimeout(beginRound, 900);
+      }, 1000);
+    }
+  }
+
+  function checkKO(){
+    if (m.over) return true;
+    if (m.gauges[m.side] <= 0){ m.over = true; setTimeout(function(){ finalizeMatch("ko-opp"); }, 900); return true; }
+    if (m.gauges[m.oppSide] <= 0){ m.over = true; setTimeout(function(){ finalizeMatch("ko-me"); }, 900); return true; }
+    return false;
+  }
+
+  function finalizeMatch(reason){
+    m.over = true;
+    var meKey = m.side, oppKey = m.oppSide;
+    var meG = m.gauges[meKey], oppG = m.gauges[oppKey];
+    var verdict = $("verdict-text");
+    var note = "";
+
+    if (reason === "ko-me"){
+      verdict.textContent = nameOf(meKey) + " KO 승"; verdict.className = "verdict win";
+      note = nameOf(oppKey) + "의 설득력이 " + m.round + "라운드 만에 완전히 무너졌습니다.";
+    } else if (reason === "ko-opp"){
+      verdict.textContent = nameOf(oppKey) + " KO 승"; verdict.className = "verdict lose";
+      note = nameOf(meKey) + "의 설득력이 " + m.round + "라운드 만에 완전히 무너졌습니다.";
+    } else if (meG > oppG){
+      verdict.textContent = nameOf(meKey) + " 판정승"; verdict.className = "verdict win";
+      note = "3라운드 접전 끝에 설득력을 더 많이 지켜낸 " + nameOf(meKey) + "의 승리입니다.";
+    } else if (meG < oppG){
+      verdict.textContent = nameOf(oppKey) + " 판정승"; verdict.className = "verdict lose";
+      note = "3라운드 접전 끝에 설득력을 더 많이 지켜낸 " + nameOf(oppKey) + "의 승리입니다.";
+    } else {
+      verdict.textContent = "무승부"; verdict.className = "verdict draw";
+      note = "3라운드 동안 설득력이 정확히 같게 소모됐습니다.";
+    }
+
+    $("result-gauges").textContent = nameOf(meKey) + " " + meG + "  vs  " + oppG + " " + nameOf(oppKey);
+    $("result-note").textContent = note;
+    showScreen("screen-result");
+  }
+
+  // ============================================================
+  // 이벤트 바인딩
+  // ============================================================
+  $("btn-go-train").addEventListener("click", startTrainingSession);
+  $("btn-go-battle").addEventListener("click", function(){ showScreen("screen-select"); });
+  $("back-from-training").addEventListener("click", function(){ showScreen("screen-menu"); });
+  $("back-from-select").addEventListener("click", function(){ showScreen("screen-menu"); });
+
+  document.querySelectorAll(".pick-card").forEach(function(btn){
+    btn.addEventListener("click", function(){ initMatch(btn.dataset.side); });
+  });
+  $("btn-retry-side").addEventListener("click", function(){ initMatch(m.side); });
+  $("btn-retry-pick").addEventListener("click", function(){ showScreen("screen-select"); });
+  $("btn-battle-to-menu").addEventListener("click", function(){ showScreen("screen-menu"); });
+
+  $("btn-next-issue").addEventListener("click", goToNextIssueOrSummary);
+  $("btn-train-again").addEventListener("click", startTrainingSession);
+  $("btn-train-to-menu").addEventListener("click", function(){ showScreen("screen-menu"); });
+
+})();
+</script>
+
+</body>
+</html>
